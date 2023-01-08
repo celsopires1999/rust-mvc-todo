@@ -1,0 +1,26 @@
+version: "3"
+
+services:
+  app:
+    build: .
+    container_name: rust-todo-server
+    volumes:
+      - .:/home/rust/app
+    ports:
+      - 3000:3000
+      - 8888:8888
+
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+    ports:
+      - 5432:5432
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
