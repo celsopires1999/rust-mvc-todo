@@ -1,4 +1,5 @@
 use super::db::Db;
+use crate::model;
 
 // region:      Todo Types
 #[derive(sqlx::FromRow, Debug, Clone)]
@@ -12,7 +13,7 @@ pub struct Todo {
 // region:       TodoMac
 pub struct TodoMac;
 impl TodoMac {
-    pub async fn list(db: &Db) -> Result<Vec<Todo>, sqlx::Error> {
+    pub async fn list(db: &Db) -> Result<Vec<Todo>, model::Error> {
         let sql = "SELECT id, cid, title FROM todo ORDER BY id DESC";
 
         // build the sqlx-query
