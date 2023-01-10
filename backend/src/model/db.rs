@@ -57,7 +57,10 @@ async fn pexec(db: &Db, file: &str) -> Result<(), sqlx::Error> {
     for sql in sqls {
         match sqlx::query(&sql).execute(db).await {
             Ok(_) => (),
-            Err(ex) => print!("WARNING - pexec - Sql file '{}' FAILED cause: {}", file, ex),
+            Err(ex) => {
+                print!("WARNING - pexec - Sql file '{}' FAILED cause: {}", file, ex);
+                return Err(ex);
+            }
         }
     }
 

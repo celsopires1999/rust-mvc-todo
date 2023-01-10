@@ -31,14 +31,58 @@ sqlb::bindable!(TodoStatus);
 
 // region:       TodoMac
 pub struct TodoMac;
+
+impl TodoMac {
+    const TABLE: &'static str = "todo";
+    const COLUMNS: &'static [&'static str] = &["id", "cid", "title", "status"];
+}
+
 impl TodoMac {
     pub async fn create(db: &Db, utx: &UserCtx, data: TodoPatch) -> Result<Todo, model::Error> {
         let mut fields = data.fields();
         fields.push(("cid", utx.user_id).into());
         let sb = sqlb::insert()
-            .table("todo")
+            .table(Self::TABLE)
             .data(fields)
-            .returning(&["id", "cid", "title", "status"]);
+            .returning(Self::COLUMNS);
+
+        let todo = sb.fetch_one(db).await?;
+
+        Ok(todo)
+    }
+
+    pub async fn get(db: &Db, _utx: &UserCtx, id: i64) -> Result<Todo, model::Error> {
+        let sb = sqlb::select()
+            .table(Self::TABLE)
+            .columns(Self::COLUMNS)
+            .and_where_eq("id", id);
+
+        let todo = sb
+            .fetch_one(db)
+            .await
+            .map_err(|sqlx_error| match sqlx_error {
+                sqlx::Error::RowNotFound => {
+                    model::Error::EntityNotFound(Self::TABLE, id.to_string())
+                }
+                other => model::Error::SqlxError(other),
+            })?;
+
+        Ok(todo)
+    }
+
+    pub async fn update(
+        db: &Db,
+        utx: &UserCtx,
+        id: i64,
+        data: TodoPatch,
+    ) -> Result<Todo, model::Error> {
+        let mut fields = data.fields();
+        fields.push(("cid", utx.user_id).into());
+        let sb = sqlb::update()
+            .table(Self::TABLE)
+            .data(fields)
+            .and_where_eq("id", id)
+            .returning(Self::COLUMNS);
 
         let todo = sb.fetch_one(db).await?;
 
@@ -47,8 +91,8 @@ impl TodoMac {
 
     pub async fn list(db: &Db, _utx: &UserCtx) -> Result<Vec<Todo>, model::Error> {
         let sb = sqlb::select()
-            .table("todo")
-            .columns(&["id", "cid", "title", "status"])
+            .table(Self::TABLE)
+            .columns(Self::COLUMNS)
             .order_by("!id");
 
         let todos = sb.fetch_all(db).await?;
