@@ -9,6 +9,9 @@ USER rust
 
 WORKDIR /home/rust/app
 
-EXPOSE 8080
+RUN rustup component add rustfmt &&\
+    cargo install cargo-watch
+
+EXPOSE 8888
 
 CMD ["tail", "-f", "/dev/null"]
