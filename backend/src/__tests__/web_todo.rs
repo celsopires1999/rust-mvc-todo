@@ -1,5 +1,8 @@
 use super::*;
-use crate::model::{init_db, Todo, TodoStatus};
+use crate::{
+    model::{init_db, Todo, TodoStatus},
+    web::handle_rejection,
+};
 use anyhow::{Context, Ok, Result};
 use serde::Deserialize;
 use serde_json::{from_str, from_value, Value};
@@ -11,7 +14,7 @@ async fn web_todo_list() -> Result<()> {
     // -- FIXTURE
     let db = init_db().await?;
     let db = Arc::new(db);
-    let todo_apis = todo_rest_filters("api", db.clone());
+    let todo_apis = todo_rest_filters("api", db.clone()).recover(handle_rejection);
 
     // -- ACTION
     let resp = warp::test::request()
