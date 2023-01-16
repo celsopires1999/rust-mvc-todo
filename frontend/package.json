@@ -3,8 +3,20 @@
   "type": "module",
   "version": "0.0.1",
   "description": "TodoMVC frontend",
-  "dependencies": {},
-  "devDependencies": {},
+  "dependencies": {
+    "dom-native": "^0.10.1"
+  },
+  "scripts": {
+    "build": "./node_modules/.bin/rollup -c"
+  },
   "author": "Celso Pires",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^24.0.0",
+    "@rollup/plugin-node-resolve": "^15.0.1",
+    "@rollup/plugin-terser": "^0.3.0",
+    "@rollup/plugin-typescript": "^11.0.0",
+    "rollup": "^3.10.0",
+    "tslib": "^2.4.1"
+  }
 }
