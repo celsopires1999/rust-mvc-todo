@@ -1,4 +1,5 @@
 import { BaseHTMLElement, customElement, getChild, getChildren, html } from "dom-native";
+import { Todo } from "./model/todo-mco";
 
 @customElement("todo-mvc")
 class TodoMvc extends BaseHTMLElement { // extends HTMLElement
@@ -20,13 +21,14 @@ class TodoMvc extends BaseHTMLElement { // extends HTMLElement
     }
 
     async refresh() {
-        let todos = [
-            { id: 1, title: "mock 1", status: "Close" },
-            { id: 2, title: "mock 2", status: "Open" }
+        let todos: Todo[] = [
+            { id: 1, title: "mock 11", status: "Open" },
+            { id: 2, title: "mock 22", status: "Close" }
         ];
         let htmlContent = document.createDocumentFragment();
         for (const todo of todos) {
             const el = document.createElement('todo-item');
+            el.data = todo; // todo will be frozen
             htmlContent.append(el);
         }
 
@@ -57,6 +59,17 @@ declare global {
 @customElement('todo-item')
 export class TodoItem extends BaseHTMLElement { // extends HTMLElement
     #titleEl!: HTMLElement;
+    #data!: Todo;
+
+    set data(data: Todo) {
+        let oldData = this.#data;
+        this.#data = Object.freeze(data);
+        if (this.isConnected) {
+            this.refresh(oldData);
+        }
+    }
+
+    get data() { return this.#data }
 
     init() {
         let htmlContent = html`
@@ -67,6 +80,20 @@ export class TodoItem extends BaseHTMLElement { // extends HTMLElement
         this.#titleEl = getChild(htmlContent, 'div');
 
         this.append(htmlContent);
+        this.refresh();
+    }
+
+    refresh(old?: Todo) {
+        if (old != null) {
+            this.classList.remove(`Todo-${old.id}`);
+            this.classList.remove(old.status);
+        }
+
+        // render new data
+        const todo = this.#data;
+        this.classList.add(`Todo-${todo.id}`);
+        this.classList.add(todo.status);
+        this.#titleEl.textContent = todo.title;
     }
 
 }
