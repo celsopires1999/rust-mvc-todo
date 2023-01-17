@@ -5,9 +5,16 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Launch Chrome",
+      "request": "launch",
+      "type": "chrome",
+      "url": "http://localhost:8888",
+      "webRoot": "${workspaceFolder}/frontend/web-folder"
+    },
+    {
       "type": "lldb",
       "request": "launch",
-      "name": "Debug",
+      "name": "Rust",
       "program": "${workspaceFolder}/backend/target/debug/todomvc",
       "args": ["../frontend/web-folder"],
       "cwd": "${workspaceFolder}/backend"

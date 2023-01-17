@@ -1,5 +1,5 @@
 import { BaseHTMLElement, customElement, getChild, getChildren, html } from "dom-native";
-import { Todo } from "./model/todo-mco";
+import { Todo, todoMco } from "./model/todo-mco";
 
 @customElement("todo-mvc")
 class TodoMvc extends BaseHTMLElement { // extends HTMLElement
@@ -21,10 +21,7 @@ class TodoMvc extends BaseHTMLElement { // extends HTMLElement
     }
 
     async refresh() {
-        let todos: Todo[] = [
-            { id: 1, title: "mock 11", status: "Open" },
-            { id: 2, title: "mock 22", status: "Close" }
-        ];
+        let todos: Todo[] = await todoMco.list();
         let htmlContent = document.createDocumentFragment();
         for (const todo of todos) {
             const el = document.createElement('todo-item');
