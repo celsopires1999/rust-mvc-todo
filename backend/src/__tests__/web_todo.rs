@@ -4,6 +4,7 @@ use crate::{
     web::handle_rejection,
 };
 use anyhow::{Context, Ok, Result};
+use futures::TryFutureExt;
 use serde::Deserialize;
 use serde_json::{from_str, from_value, Value};
 use std::{str::from_utf8, sync::Arc};
@@ -12,9 +13,7 @@ use warp::hyper::{body::Bytes, Response};
 #[tokio::test]
 async fn web_todo_list() -> Result<()> {
     // -- FIXTURE
-    let db = init_db().await?;
-    let db = Arc::new(db);
-    let todo_apis = todo_rest_filters("api", db.clone()).recover(handle_rejection);
+    let todo_apis = apply_basic_fixture().await?.recover(handle_rejection);
 
     // -- ACTION
     let resp = warp::test::request()
@@ -42,9 +41,7 @@ async fn web_todo_list() -> Result<()> {
 #[tokio::test]
 async fn web_todo_get_ok() -> Result<()> {
     // -- FIXTURE
-    let db = init_db().await?;
-    let db = Arc::new(db);
-    let todo_apis = todo_rest_filters("api", db.clone()).recover(handle_rejection);
+    let todo_apis = apply_basic_fixture().await?.recover(handle_rejection);
 
     // -- ACTION
     let resp = warp::test::request()
@@ -71,9 +68,7 @@ async fn web_todo_get_ok() -> Result<()> {
 #[tokio::test]
 async fn web_todo_create_ok() -> Result<()> {
     // -- FIXTURE
-    let db = init_db().await?;
-    let db = Arc::new(db);
-    let todo_apis = todo_rest_filters("api", db.clone()).recover(handle_rejection);
+    let todo_apis = apply_basic_fixture().await?.recover(handle_rejection);
     // new todo fixture
     const TITLE: &str = "test - web_todo_create_ok";
     let body = json!({
@@ -106,9 +101,7 @@ async fn web_todo_create_ok() -> Result<()> {
 #[tokio::test]
 async fn web_todo_update_ok() -> Result<()> {
     // -- FIXTURE
-    let db = init_db().await?;
-    let db = Arc::new(db);
-    let todo_apis = todo_rest_filters("api", db.clone()).recover(handle_rejection);
+    let todo_apis = apply_basic_fixture().await?.recover(handle_rejection);
     // update todo fixture
     const TITLE: &str = "test - todo 100 updated";
     let body = json!({
@@ -191,5 +184,14 @@ where
     let data: D = from_value(data)?;
 
     Ok(data)
+}
+
+async fn apply_basic_fixture(
+) -> Result<impl Filter<Extract = (impl warp::Reply,), Error = warp::Rejection> + Clone> {
+    let db = init_db().await?;
+    let db = Arc::new(db);
+    let todo_apis = todo_rest_filters("api", db.clone());
+
+    Ok(todo_apis)
 }
 // endregion:   Web Test Utils
